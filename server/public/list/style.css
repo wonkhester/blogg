@@ -2,25 +2,110 @@ body {
     margin: 0;
     background-color: rgb(40, 40, 40);
 }
+button:hover {
+    cursor: pointer;
+}
 #navMenu {
+    display: flex;
     position: fixed;
+    align-items: center;
     width: 100vw;
     height: 60px;
     background-color: rgb(30, 30, 30);
-    border-bottom: 1px solid white;
+    border-bottom: 1px solid rgb(105, 105, 105);
+}
+#homeBtn {
+    font-size: xx-large;
+    color: white;
+    padding-left: 10px;
+}
+#blogSearchInput {
+    width: calc(100vw - 80px - 210px - 80px);
+    height: 40px;
+    color: white;
+    font-size: medium;
+    background-color: rgb(30, 30, 30);
+    margin: 0 40px 0 40px;
+}
+#filterBtn {
+    width: 60px;
+    height: 40px;
+    color: white;
+    font-size: medium;
+    background-color: rgb(105, 105, 105);
+}
+#filterMenu {
+    display: none;
+    position: fixed;
+    flex-direction: column;
+    background-color: rgb(105, 105, 105);
+    top: 60px;
+    width: 100vw;
+    height: 200px;
+}
+#filters {
+
+}
+#filterBar {
+
+}
+#filterSearchBtn {
+
+}
+#filterCloseBtn {
+    color: white;
+    background-color: rgb(105, 105, 105);
 }
 #bloglist {
-    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    padding-top: 100px;
+    align-items: center;
 }
-div.blog {
-    width: 97vw;
+div.blogCard {
+    display: flex;
+    width: calc(100vw - 100px);
     height: 300px;
     background-color: rgb(30, 30, 30);
-    border-bottom: 1px solid white;
+    border: 1px solid rgb(105, 105, 105);
+    margin-bottom: 10px;
+    padding: 10px 10px 10px 10px;
+    flex-direction: column;
 }
-a.blog {
-
+a.blogHeader {
+    font-size: xx-large;
+    color: white;
 }
-p.blog {
-
+p.blogPreview {
+    font-size: small;
+    color: white
+}
+h1.author {
+    font-size: large;
+    color: rgb(160, 160, 160);
+}
+h2.posted{
+    font-size: large;
+    color: gray;
+    margin: 0;
+}
+img.postedImg {
+    width: 15px;
+    height: 15px;
+}
+div.blogCardText {
+    height: 260px;
+    width: 100%;
+}
+div.tags {
+    display: flex;
+    align-items: flex-end;
+    height: 40px;
+    width: 100%;
+}
+button.tags {
+    background-color: gray;
+    color: white;
+    border-radius: 8px;
+    margin: 1px 2px;
 }

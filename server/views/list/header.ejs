@@ -1,3 +1,33 @@
 <div id="navMenu">
-
+    <a id="homeBtn" href="/">Mystery blog</a>
+    <input id="blogSearchInput" type="text">
+    <button id="filterBtn" onclick="showFilterMenu()">Filters</button>
 </div>
+<div id="filterMenu">
+    <div id="filters">
+
+    </div>
+    <div id="filterBar">
+        <button id="filterSearchBtn" onclick="searchFilters()">Sök</button>
+        <button id="filterCloseBtn" onclick="showFilterMenu()">Stäng</button>
+    </div>
+</div>
+<script>
+    var blogSearch = '<%= blogSearch %>';
+    var activeFilters = '<%= activeFilters %>';
+
+    document.getElementById("blogSearchInput").value = blogSearch;
+
+    function showFilterMenu() {
+        if (document.getElementById("filterMenu").style.display === "flex") {
+            document.getElementById("filterMenu").style.display = "none";
+        }
+        else {
+            document.getElementById("filterMenu").style.display = "flex";
+        }
+    }
+
+    function searchFilters() {
+
+    }
+</script>
