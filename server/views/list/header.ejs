@@ -1,33 +1,48 @@
 <div id="navMenu">
     <a id="homeBtn" href="/">Mystery blog</a>
-    <input id="blogSearchInput" type="text">
+    <input id="blogSearchInput" type="text" onkeypress="searchBlog(event)">
     <button id="filterBtn" onclick="showFilterMenu()">Filters</button>
 </div>
 <div id="filterMenu">
     <div id="filters">
-
+        <label for="cars" class="filter">Cars: </label>
+        <input type="checkbox" class="filter" name="cars" onclick="addFilter('cars')">
+        <label for="family" class="filter">Family: </label>
+        <input type="checkbox" class="filter" name="family" onclick="addFilter('family')">
+        <label for="money" class="filter">Money: </label>
+        <input type="checkbox" class="filter" name="money" onclick="addFilter('money')">
+        <label for="computers" class="filter">Computers: </label>
+        <input type="checkbox" class="filter" name="computers" onclick="addFilter('computers')">
     </div>
     <div id="filterBar">
-        <button id="filterSearchBtn" onclick="searchFilters()">Sök</button>
+        <button id="filterSearchBtn" onclick="search()">Sök</button>
         <button id="filterCloseBtn" onclick="showFilterMenu()">Stäng</button>
     </div>
 </div>
 <script>
-    var blogSearch = '<%= blogSearch %>';
+    var blogSearch = '<%= blogSearch ? blogSearch : "" %>';
     var activeFilters = '<%= activeFilters %>';
 
     document.getElementById("blogSearchInput").value = blogSearch;
 
     function showFilterMenu() {
-        if (document.getElementById("filterMenu").style.display === "flex") {
-            document.getElementById("filterMenu").style.display = "none";
-        }
-        else {
-            document.getElementById("filterMenu").style.display = "flex";
+        var filterMenu = document.getElementById("filterMenu");
+        filterMenu.style.display = (filterMenu.style.display === "flex") ? "none" : "flex";
+    }
+
+    function addFilter(filter) {
+        activeFilters[filter] = 1;
+    }
+
+    function searchBlog(e) {
+        if (e.key === "Enter") {
+            blogSearch = document.getElementById("blogSearchInput").value;
+            search();
         }
     }
 
-    function searchFilters() {
-
+    function search() {
+        var filtersString = JSON.stringify(activeFilters);
+        window.location.href = `/{search=${blogSearch}, filters=${filtersString}}`;
     }
 </script>

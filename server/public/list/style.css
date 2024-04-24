@@ -38,22 +38,36 @@ button:hover {
     display: none;
     position: fixed;
     flex-direction: column;
+    justify-content: space-between;
     background-color: rgb(105, 105, 105);
     top: 60px;
     width: 100vw;
-    height: 200px;
+    height: 160px;
+    padding: 20px;
 }
 #filters {
-
+}
+label.filter {
+    color: white;
+    font-size: medium;
+}
+input.filter {
+    color: white;
+    background-color: rgb(105, 105, 105);
 }
 #filterBar {
-
+    width: calc(100% - 40px);
+    display: flex;
+    justify-content: space-between;
 }
 #filterSearchBtn {
-
+    color: white;
+    font-size: x-large;
+    background-color: rgb(105, 105, 105);
 }
 #filterCloseBtn {
     color: white;
+    font-size: x-large;
     background-color: rgb(105, 105, 105);
 }
 #bloglist {
