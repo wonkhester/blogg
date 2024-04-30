@@ -1,0 +1,16 @@
+<div id="filterMenu">
+    <div id="filters">
+        <label for="cars" class="filter">Cars: </label>
+        <input type="checkbox" class="filter" name="cars" onclick="addFilter('cars')">
+        <label for="family" class="filter">Family: </label>
+        <input type="checkbox" class="filter" name="family" onclick="addFilter('family')">
+        <label for="money" class="filter">Money: </label>
+        <input type="checkbox" class="filter" name="money" onclick="addFilter('money')">
+        <label for="computers" class="filter">Computers: </label>
+        <input type="checkbox" class="filter" name="computers" onclick="addFilter('computers')">
+    </div>
+    <div id="filterBar">
+        <button id="filterSearchBtn" onclick="search()">Sök</button>
+        <button id="filterCloseBtn" onclick="showFilterMenu()">Stäng</button>
+    </div>
+</div>

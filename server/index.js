@@ -11,16 +11,17 @@ import bcrypt from "bcrypt";
 
 const app = express();
 const port = 3000;
-const __dirname = new URL(".", import.meta.url).pathname;
+const __dirname = path.resolve();
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-    secret: "your-secret-key",
+    secret: "89320+45yewpiufhgp49187yepifgb4o1ugwepfiug40pqubprfiug40pqöu4bögv",
     resave: false,
     saveUninitialized: true
 }));
 
+console.log("__dirname:", __dirname);
 
 
 async function blogs() {
@@ -84,19 +85,92 @@ async function blogs() {
     }
 };
 
-app.get("/bloglist", (req, res) => {
+async function userBlogs() {
+    try {
+        const directoryPath = path.join(__dirname, "..", "db", "blogs");
+        const files = await fs.readdir(directoryPath);
+        const blogDataPromises = files.map(async fileName => {
+            try {
+                const file = await fs.readFile(path.join(directoryPath, fileName), "utf8");
+                if (!file) {
+                    throw new Error(`File "${fileName}" is empty or could not be read.`);
+                }
+                const fileLines = file.split("\n");
 
-});
+                const content = fileLines.slice(4).join("\n"); // Join lines starting from index 4
+                
+                const postedStr = () => {
+                    const postedTimestamp = parseInt(fileLines[2]); // Parse the timestamp string to an integer
+                    const postedDate = new Date(postedTimestamp); // Create a Date object from the timestamp
+                    if (isNaN(postedDate.getTime())) {
+                        return "Error";
+                    }
+                    const currentDate = new Date();
+                    const timeDifference = currentDate.getTime() - postedDate.getTime();
+                    const daysAgo = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+                
+                    if (daysAgo < 1) {
+                        return "recently";
+                    } else if (daysAgo === 1) {
+                        return "yesterday";
+                    } else if (daysAgo <= 7) {
+                        return `${daysAgo} days ago`;
+                    } else if (daysAgo <= 30) {
+                        return `${Math.floor(daysAgo / 7)} weeks ago`;
+                    } else if (daysAgo <= 364) {
+                        return `${Math.floor(daysAgo / 30)} months ago`;
+                    } else {
+                        return `${Math.floor(daysAgo / 365)} years ago`;
+                    }
+                }
+
+                const fileData = {
+                    id: fileName.split(".")[0],
+                    title: fileLines[0],
+                    author: fileLines[1],
+                    posted: postedStr(),
+                    tags: fileLines[3].split(" "),
+                    content: content
+                }
+
+                return fileData;
+            } catch (error) {
+                console.error("Error reading file:", error);
+                return null;
+            }
+        });
+        return Promise.all(blogDataPromises);
+    } catch (error) {
+        console.error("Error reading directory:", error);
+        return [];
+    }
+}
 
 app.get("/blog/:data", (req, res) => {
 
 });
 
-app.get("/home", (req, res) => {
-    if (req.session.isLoggedIn) {
-        res.render("home/main.ejs");
-    } else {
-        res.redirect("/login");
+app.get("/home", async (req, res) => {
+    try {
+        if (req.session && req.session.isLoggedIn) {
+            const username = req.session.username;
+            const userFilePath = path.join(__dirname, "..", "db", "accounts", username + ".json");
+    
+            const fileData = await fs.readFile(userFilePath, "utf8");
+            const userData = JSON.parse(fileData);
+    
+            const ownedBlogs = userData.ownedBlogs;
+    
+            console.log(ownedBlogs)
+    
+            res.render("home/main.ejs");
+        } else {
+            res.redirect("/login");
+        }
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send("Internal Server Error");
     }
 });
 
@@ -115,6 +189,7 @@ app.post("/login", async (req, res) => {
 
         bcrypt.compare(password, data.password, (err, result) => {
             if (result) {
+                req.session.username = username;
                 req.session.isLoggedIn = true;
                 res.redirect("/home");
             } else {
@@ -162,6 +237,7 @@ app.post("/signup", async (req, res) => {
                     try {
                         // Write the user data to the file
                         await fs.writeFile(filePath, JSON.stringify(userDataObj), "utf8");
+                        req.session.username = username;
                         req.session.isLoggedIn = true;
                         res.redirect("/home");
                     } catch (error) {
