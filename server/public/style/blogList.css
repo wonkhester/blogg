@@ -1,0 +1,56 @@
+#bloglist {
+    display: flex;
+    flex-direction: column;
+    padding-top: 100px;
+    align-items: center;
+}
+div.blogCard {
+    display: flex;
+    width: calc(100vw - 100px);
+    height: 230px;
+    background-color: rgb(30, 30, 30);
+    border: 1px solid rgb(105, 105, 105);
+    margin-bottom: 10px;
+    padding: 10px 10px 10px 10px;
+    flex-direction: column;
+}
+div.blogHeaderContainer {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+a.blogHeader {
+    font-size: xx-large;
+    color: white;
+}
+p.blogPreview {
+    font-size: small;
+}
+h1.author {
+    font-size: large;
+    color: rgb(160, 160, 160);
+}
+h2.posted{
+    font-size: large;
+    color: gray;
+    margin: 0;
+}
+img.postedImg {
+    width: 15px;
+    height: 15px;
+}
+div.blogCardText {
+    height: 260px;
+    width: 100%;
+}
+div.tags {
+    display: flex;
+    align-items: flex-end;
+    height: 40px;
+    width: 100%;
+}
+button.tags {
+    background-color: gray;
+    border-radius: 8px;
+    margin: 1px 2px;
+}

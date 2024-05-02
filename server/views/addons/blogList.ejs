@@ -4,15 +4,22 @@
     <% blogs.forEach(blog => {%>
         <div id="<%= blog.id %>" class="blogCard">
             <div class="blogCardText">
-                <a class="blogHeader" href="/blog/<%= blog.id %>">
-                    <%= blog.title %>
-                </a>
+                <div class="blogHeaderContainer">
+                    <a class="blogHeader" href="/blog/<%= blog.id %>">
+                        <%= blog.title %>
+                    </a>
+                    <% if (blog.owner) { %>
+                        <a class="blogHeader" href="/blog/edit/<%= blog.id %>">
+                            Edit
+                        </a>
+                    <% } %>
+                </div>
                 <h1 class="author">Author: <%= blog.author %></h1>
                 <h2 class="posted">
                     <img class="postedImg" src="/assets/img/clock.png" alt="">Posted <%= blog.posted %>
                 </h2>
                 <p class="blogPreview">
-                    <%= blog.content %>
+                    <%= blog.preview %>
                 </p>
             </div>
             <div class="tags">
