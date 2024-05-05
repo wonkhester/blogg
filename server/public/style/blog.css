@@ -8,6 +8,10 @@ body {
     background: rgb(30, 30, 30);
 }
 
+h2 {
+    margin: 10px;
+}
+
 .header {
     padding: 5px;
     font-size: 40px;
@@ -15,13 +19,24 @@ body {
     background: rgb(105, 105, 105);
 }
 
-.fakeimg {
-    background-color: #aaa;
+.images {
+    display: flex;
     width: 100%;
-    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.imgHolder {
+    width: 18%;
+    margin: 0% 1%;
+}
+
+.img {
+    max-width: 100%;
 }
 
 .card {
+    display: flex;
+    flex-direction: column;
     background-color: rgb(105, 105, 105);
     padding: 20px;
     margin-top: 20px;

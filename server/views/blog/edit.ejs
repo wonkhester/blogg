@@ -4,29 +4,174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/style/style.css">
     <link rel="stylesheet" href="/style/blog.css">
 </head>
 <body>
     
 <div class="header">
+    <button style="display: flex; position: absolute; justify-self: flex-start; width: 100px; height: 30px; font-size: large; justify-content: center;">Save</button>
     <h2>Blog Name</h2>
 </div>
 
-<div class="row">
-    <div class="card">
-        <h2>TITLE HEADING</h2>
-        <h5>Title description, Dec 7, 2017</h5>
-        <div class="fakeimg" style="height:200px;">Image</div>
-        <p>Some text..</p>
-        <p>Sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
-    </div>
-    <div class="card">
-        <h2>TITLE HEADING</h2>
-        <h5>Title description, Sep 2, 2017</h5>
-        <div class="fakeimg" style="height:200px;">Image</div>
-        <p>Some text..</p>
-        <p>Sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+<button onclick="newCard()" style="display: flex; width: 100%; height: 30px; font-size: large; justify-content: center; margin-top: 20px;">New post</button>
+
+<div id="cardList" class="row">
+    <div class="card" id="card_1">
+        <button onclick="deleteCard(this)" style="display: flex; position: absolute; align-self: flex-end; width: 80px; font-size: x-large; color: red;justify-content: center;" >Delete</button>
+        <input type="text" placeholder="Your title.." style="font-size: x-large; width: calc(100% - 90px);">
+        <h5>Dec 7, 2017</h5>
+        <div id="images_1" class="images">
+            <div class="imgHolder">
+                <input type="file" id="images_1_imageInput_1" name="image" accept="image/*" onchange="previewImage('images_1_imageInput_1', 'images_1_imagePreview_1')">
+                <div id="images_1_imagePreview_1" class="img"></div>
+            </div>
+        </div>
+        <label for="content">Your Text:</label><br>
+        <textarea id="content_1" name="content" placeholder="Some text.." style="resize: none; width: 100%; overflow: hidden;"></textarea> 
     </div>
 </div>
+<script>
+    function newCard() {
+        const nextCardId = () => {
+            const existingCards = document.getElementById("cardList").children;
+
+            let heighestCardId = 0;
+            existingCards.forEach((card) => {
+                if (parseInt(card.id.split("_")[-1]) > heighestCardId) {
+                    heighestCardId = parseInt(card.id.split("_")[-1]);
+                }
+            })
+            return heighestCardId++;
+        }
+
+        const cardContainer = document.createElement('div');
+        cardContainer.classList.add('card');
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.style.display = 'flex';
+        deleteButton.style.position = 'absolute';
+        deleteButton.style.alignSelf = 'flex-end';
+        deleteButton.style.width = '80px';
+        deleteButton.style.fontSize = 'x-large';
+        deleteButton.style.color = 'red';
+        deleteButton.style.justifyContent = 'center';
+        deleteButton.onclick = function() {
+            cardContainer.remove();
+        };
+
+        const titleInput = document.createElement('input');
+        titleInput.type = 'text';
+        titleInput.placeholder = 'Your title..';
+        titleInput.style.fontSize = 'x-large';
+        titleInput.style.width = 'calc(100% - 90px)';
+
+        const dateElement = document.createElement('h5');
+        dateElement.textContent = new Date().toDateString();
+
+        const imagesContainer = document.createElement('div');
+        imagesContainer.classList.add('images');
+
+
+        const imageInput = document.createElement('input');
+        imageInput.type = 'file';
+        imageInput.id = `images_${nextCardId}_imageInput_1`;
+        imageInput.name = 'image';
+        imageInput.accept = 'image/*';
+        imageInput.onchange = function() {
+            previewImage(`images_${nextCardId}_imageInput_1`, `images_${nextCardId}_imagePreview_1`);
+        };
+        
+        const imgHolder = document.createElement('div');
+        imgHolder.classList.add('imgHolder');
+        imgHolder.appendChild(imageInput);
+
+        const imagePreview = document.createElement('div');
+        imagePreview.id = `images_${nextCardId}_imagePreview_1`;
+        imagePreview.classList.add('img');
+        imgHolder.appendChild(imagePreview);
+
+        imagesContainer.appendChild(imgHolder);
+
+        const contentTextarea = document.createElement('textarea');
+        contentTextarea.id = `content_${nextCardId}`;
+        contentTextarea.name = 'content';
+        contentTextarea.placeholder = 'Some text..';
+        contentTextarea.style.resize = 'none';
+        contentTextarea.style.width = '100%';
+        contentTextarea.style.overflow = 'hidden';
+        contentTextarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight + 2) + 'px';
+        });
+
+        cardContainer.appendChild(deleteButton);
+        cardContainer.appendChild(titleInput);
+        cardContainer.appendChild(dateElement);
+        cardContainer.appendChild(imagesContainer);
+        cardContainer.appendChild(contentTextarea);
+
+        document.getElementById("cardList").appendChild(cardContainer);
+    }
+
+
+    function deleteCard(button) {
+        var cardDiv = button.parentElement;
+        cardDiv.remove();
+    }
+
+    function previewImage(inputId, previewId) {
+        const preview = document.getElementById(previewId);
+        const fileInput = document.getElementById(inputId);
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = "";
+            img.style.maxWidth = '100%';
+            preview.innerHTML = '';
+            preview.appendChild(img);
+        };
+
+        reader.readAsDataURL(file);
+
+        const baseInputId = inputId.split("").slice(0, -1).join("");
+        const NextInputIdNumber = parseInt(inputId.slice(-1)) + 1;
+        if (NextInputIdNumber < 6) {
+            const nextInputId = baseInputId + NextInputIdNumber;
+            if (!document.getElementById(nextInputId)) {
+                const nextInput = document.createElement('input');
+                nextInput.type = 'file';
+                nextInput.id = nextInputId;
+                nextInput.name = 'image';
+                nextInput.accept = 'image/*';
+                nextInput.onchange = function() {
+                    previewImage(nextInputId, nextInputId.replace('imageInput', 'imagePreview'));
+                };
+                const imgHolder = document.createElement('div');
+                imgHolder.classList.add('imgHolder');
+                imgHolder.appendChild(nextInput);
+                const imagePreview = document.createElement('div');
+                imagePreview.id = nextInputId.replace('imageInput', 'imagePreview');
+                imagePreview.classList.add('img');
+                imgHolder.appendChild(imagePreview);
+                const imagesContainerId = inputId.split("_")[0] + "_" + inputId.split("_")[1];
+                const imagesContainer = document.getElementById(imagesContainerId)
+                imagesContainer.appendChild(imgHolder);
+            }
+        }
+    }
+
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight + 2) + 'px';
+        });
+    });
+</script>
 </body>
 </html>
