@@ -5,13 +5,13 @@ import fs from "fs/promises";
 import path from "path"; 
 import { File } from "buffer";
 import bcrypt from "bcrypt";
+import { type } from "os";
 
 const app = express();
 const port = 3000;
 const __dirname = path.resolve();
 const dataBasePath = path.join(__dirname, "..", "db");
 const blogPath = path.join(dataBasePath, "blogs");
-const blogContentPath = path.join(dataBasePath, "blogContent");
 const accountsPath = path.join(dataBasePath, "accounts");
 
 app.use(express.static("public"));
@@ -22,59 +22,26 @@ app.use(session({
     saveUninitialized: true
 }));
 
-
 export async function blogs() {
     try {
         const files = await fs.readdir(blogPath);
         const blogDataPromises = files.map(async fileName => {
             try {
-                const file = await fs.readFile(path.join(blogPath, fileName), "utf8");
-                if (!file) {
+                const fileData = JSON.parse(await fs.readFile(path.join(blogPath, fileName), "utf8"));
+                if (!fileData) {
                     throw new Error(`File "${fileName}" is empty or could not be read.`);
                 }
-                const fileLines = file.split("\n");
 
-                const preview = fileLines.slice(4).join("\n");
-                
-                const postedStr = () => {
-                    const postedTimestamp = parseInt(fileLines[2]);
-                    const postedDate = new Date(postedTimestamp);
-                    if (isNaN(postedDate.getTime())) {
-                        return "Error";
-                    }
-                    const currentDate = new Date();
-                    const timeDifference = currentDate.getTime() - postedDate.getTime();
-                    const daysAgo = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-                
-                    if (daysAgo < 1) {
-                        return "recently";
-                    } else if (daysAgo === 1) {
-                        return "yesterday";
-                    } else if (daysAgo <= 7) {
-                        return `${daysAgo} days ago`;
-                    } else if (daysAgo <= 30) {
-                        return `${Math.floor(daysAgo / 7)} weeks ago`;
-                    } else if (daysAgo <= 364) {
-                        return `${Math.floor(daysAgo / 30)} months ago`;
-                    } else {
-                        return `${Math.floor(daysAgo / 365)} years ago`;
-                    }
-                }
-
-                if (postedStr() === "Error") {
-                    return null;
-                }
-
-                const fileData = {
+                const data = {
                     id: fileName.split(".")[0],
-                    title: fileLines[0],
-                    author: fileLines[1],
-                    posted: postedStr(),
-                    tags: fileLines[3].split(" "),
-                    preview: preview
+                    title: fileData.title,
+                    author: fileData.author,
+                    posted: fileData.posted,
+                    tags: fileData.tags,
+                    preview: fileData.preview,
                 }
 
-                return fileData;
+                return data;
             } catch (error) {
                 console.error("Error reading file:", error);
                 return null;
@@ -92,54 +59,26 @@ export async function blogs() {
 export async function userBlogs(ownedBlogs) {
     try {
         const files = ownedBlogs.map(blogId => {
-            return blogId + ".db";
+            return blogId + ".json";
         });
         const blogDataPromises = files.map(async fileName => {
             try {
-                const file = await fs.readFile(path.join(blogPath, fileName), "utf8");
-                if (!file) {
+                const fileData = JSON.parse(await fs.readFile(path.join(blogPath, fileName), "utf8"));
+                if (!fileData) {
                     throw new Error(`File "${fileName}" is empty or could not be read.`);
                 }
-                const fileLines = file.split("\n");
 
-                const preview = fileLines.slice(4).join("\n");
-                
-                const postedStr = () => {
-                    const postedTimestamp = parseInt(fileLines[2]);
-                    const postedDate = new Date(postedTimestamp);
-                    if (isNaN(postedDate.getTime())) {
-                        return "Error";
-                    }
-                    const currentDate = new Date();
-                    const timeDifference = currentDate.getTime() - postedDate.getTime();
-                    const daysAgo = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-                
-                    if (daysAgo < 1) {
-                        return "recently";
-                    } else if (daysAgo === 1) {
-                        return "yesterday";
-                    } else if (daysAgo <= 7) {
-                        return `${daysAgo} days ago`;
-                    } else if (daysAgo <= 30) {
-                        return `${Math.floor(daysAgo / 7)} weeks ago`;
-                    } else if (daysAgo <= 364) {
-                        return `${Math.floor(daysAgo / 30)} months ago`;
-                    } else {
-                        return `${Math.floor(daysAgo / 365)} years ago`;
-                    }
-                }
-
-                const fileData = {
+                const data = {
                     id: fileName.split(".")[0],
-                    title: fileLines[0],
-                    author: "you",
-                    posted: postedStr(),
-                    tags: fileLines[3].split(" "),
-                    preview: preview,
+                    title: fileData.title,
+                    author: fileData.author,
+                    posted: fileData.posted,
+                    tags: fileData.tags,
+                    preview: fileData.preview,
                     owner: true,
                 }
 
-                return fileData;
+                return data;
             } catch (error) {
                 console.error("Error reading file:", error);
                 return null;
@@ -162,27 +101,62 @@ app.get("/blog/edit/:id", async (req, res) => {
             const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
             
             if (userData.ownedBlogs.includes(parseInt(id))) {
-                const MainFile = await fs.readFile(path.join(blogPath, id + ".db"), "utf8");
-                if (!MainFile) {
-                    throw new Error(`File "${id}.db" is empty or could not be read.`);
-                }
-                const MainFileLines = MainFile.split("\n");
-
-                const preview = MainFileLines.slice(4).join("\n");
-
-                async function getBlogList () {
-                    const blogfiles = await fs.readdir(path.join(blogContentPath, `${id}`));
-                    
+                const blogData = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
+                if (!blogData) {
+                    throw new Error(`File "${id}.json" is empty or could not be read.`);
                 }
 
-                const blogData = {
+                const data = {
                     id: id,
-                    title: MainFileLines[0],
-                    tags: MainFileLines[3].split(" "),
-                    preview: preview,
-                    blogList: /*await getBlogList()*/ null,
+                    title: blogData.title,
+                    tags: blogData.tags,
+                    preview: blogData.preview,
+                    blogList: blogData.blogList,
                 }
-                res.render("blog/edit.ejs", {blogData: blogData});
+                res.render("blog/edit.ejs", {blogData: data});
+            }
+            else {
+                res.redirect("/home");
+            }
+        } else {
+            res.redirect("/login");
+        }
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.post("/blog/edit/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        if (req.session && req.session.isLoggedIn) {
+            const username = req.session.username;
+
+            const userFilePath = path.join(accountsPath, `${username}.json`);
+            const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
+            
+            if (userData.ownedBlogs.includes(parseInt(id))) {
+                const blogData = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
+                if (!blogData) {
+                    throw new Error(`File "${id}.json" is empty or could not be read.`);
+                }
+
+                const newData = req.body;
+
+                const data = {
+                    author: blogData.author, 
+                    title: newData.title, 
+                    posted: blogData.posted, 
+                    tags: newData.preview, 
+                    preview: newData.preview, 
+                    blogList: newData.blogList,
+                }
+
+                await fs.writeFile(path.join(blogPath, `${id}.json`), JSON.stringify(data));
+
+                res.redirect("/blog/edit/" + id);
             }
             else {
                 res.redirect("/home");
@@ -213,7 +187,7 @@ app.post("/blog/new", async (req, res) => {
                 const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
     
                 const files = await fs.readdir(blogPath);
-                const numbers = files.filter(file => /^\d+\.db$/.test(file)).map(file => parseInt(file.split('.')[0]));
+                const numbers = files.filter(file => /^\d+\.json$/.test(file)).map(file => parseInt(file.split('.')[0]));
                 
                 let highestNumber = 0;
                 if (numbers.length > 0) {
@@ -221,9 +195,9 @@ app.post("/blog/new", async (req, res) => {
                 }
     
                 const newFileName = highestNumber + 1;
-                const fileContent = title+ "\n" + username + "\n\n\n";
+                const fileContent = {author: username, title: title, posted: "", tags: [], preview: "", blogList: []};
     
-                await fs.writeFile(path.join(blogPath, `${newFileName}.db`), fileContent);
+                await fs.writeFile(path.join(blogPath, `${newFileName}.json`), JSON.stringify(fileContent));
                 await fs.mkdir(path.join(blogContentPath, `${newFileName}`));
     
                 userData.ownedBlogs.push(newFileName)
@@ -246,19 +220,18 @@ app.post("/blog/new", async (req, res) => {
 app.get("/blog/:id", async (req, res) => {
     const id = req.params.id;
     try {
-        const MainFile = await fs.readFile(path.join(blogPath, id + ".db"), "utf8");
+        const MainFile = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
         if (!MainFile) {
-            throw new Error(`File "${id}.db" is empty or could not be read.`);
+            throw new Error(`File "${id}.json" is empty or could not be read.`);
         }
-        const MainFileLines = MainFile.split("\n");
 
         const fileData = {
             id: id,
-            title: fileLines[0],
-            author: "you",
-            posted: postedStr(),
-            tags: fileLines[3].split(" "),
-            preview: preview
+            title: MainFile.title,
+            author: MainFile.author,
+            posted: MainFile.posted,
+            tags: MainFile.tags,
+            preview: MainFile.preview
         }
         res.render("home/index.ejs", { blogs: blogData, activeFilters: {}, blogSearch: ""});
     }
