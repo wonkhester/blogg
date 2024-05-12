@@ -162,33 +162,43 @@ app.post("/blog/edit/:id", async (req, res) => {
                     throw new Error(`File "${id}.json" is empty or could not be read.`);
                 }
 
-                const builtBlogList = await Promise.all(newData.blogList.map(async (blog) => {
-                    const images = await Promise.all(blog.images.map(async (img) => {
-                        const files = await fs.readdir(imgPath);
+                const files = await fs.readdir(imgPath);
+
+                const builtBlogList = [];
+                for (const blog of newData.blogList) {
+                    const images = [];
+                    for (const img of blog.images) {
+                        var foundDubble = false;
                         for (const fileName of files) {
                             const fileData = await fs.readFile(path.join(imgPath, fileName), "utf8");
                             if (fileData === img.src) {
-                                return parseInt(fileName.split('.')[0]);
+                                foundDubble = true;
+                                images.push(parseInt(fileName.split('.')[0]));
+                                break;
                             }
                         }
-                
-                        const numbers = files.filter(file => /^\d+\.db$/.test(file)).map(file => parseInt(file.split('.')[0]));
-                        let highestNumber = 0;
-                        if (numbers.length > 0) {
-                            highestNumber = Math.max(...numbers) + 1;
+                        if (foundDubble) {
+                            continue;
                         }
-                
-                        await fs.writeFile(path.join(imgPath, `${highestNumber}.db`), img.src);
 
-                        return highestNumber;
-                    }));
-                    return {
+                        const numbers = files.map(file => parseInt(file.split('.')[0]));
+                        var highestNumber = 0;
+                        if (numbers.length > 0) {
+                            highestNumber = Math.max(...numbers);
+                        }
+                        const newNumber = highestNumber + 1;
+
+                        files.push(newNumber + ".db");
+                        await fs.writeFile(path.join(imgPath, `${newNumber}.db`), img.src);
+                        images.push(newNumber);
+                    }
+                    builtBlogList.push({
                         title: blog.title,
                         date: blog.date,
                         images: images,
                         content: blog.content
-                    };
-                }));
+                    });
+                }
                 
                 const data = {
                     id: id,

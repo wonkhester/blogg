@@ -93,10 +93,18 @@
                 const date = child.querySelector(".date").textContent;
                 const images = Array.from(child.querySelectorAll(".images")).map((imgContainer) => {
                     const imgSources = Array.from(imgContainer.querySelectorAll(".img")).map((imgElement) => {
-                        return imgElement.childNodes.length > 0 ? imgElement.childNodes[0].src : "";
+                        if (imgElement.childNodes.length > 0) {
+                            console.log(imgElement)
+                            console.log(imgElement.childNodes[0])
+                            console.log(imgElement.childNodes[0].src)
+                            return imgElement.childNodes[0].src;
+                        }
+                        return "";
                     });
+
                     return imgSources.filter(src => src).map(src => ({ src: src }));
                 });
+
                 const content = child.querySelector(".content").value;
 
                 return {
