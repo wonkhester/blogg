@@ -13,9 +13,11 @@ const __dirname = path.resolve();
 const dataBasePath = path.join(__dirname, "..", "db");
 const blogPath = path.join(dataBasePath, "blogs");
 const accountsPath = path.join(dataBasePath, "accounts");
+const imgPath = path.join(dataBasePath, "images");
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '100mb' }));
 app.use(session({
     secret: "89320+45yewpiufhgp49187yepifgb4o1ugwepfiug40pqubprfiug40pqöu4bögv",
     resave: false,
@@ -106,14 +108,29 @@ app.get("/blog/edit/:id", async (req, res) => {
                     throw new Error(`File "${id}.json" is empty or could not be read.`);
                 }
 
+                const builtBlogList = blogData.blogList.map(async (blog) => {
+                    const images = await Promise.all(blog.images.map(async (id) => {
+                        const src = await fs.readFile(path.join(imgPath, id + ".db"), "utf8");
+                        return { src };
+                    }));
+                    return {
+                        title: blog.title,
+                        date: blog.date,
+                        images: images,
+                        content: blog.content
+                    };
+                });
+                
                 const data = {
                     id: id,
                     title: blogData.title,
+                    posted: blogData.posted, 
                     tags: blogData.tags,
                     preview: blogData.preview,
-                    blogList: blogData.blogList,
-                }
-                res.render("blog/edit.ejs", {blogData: data});
+                    blogList: await Promise.all(builtBlogList)
+                };
+
+                res.render("blog/edit.ejs", { blogData: data });
             }
             else {
                 res.redirect("/home");
@@ -123,53 +140,80 @@ app.get("/blog/edit/:id", async (req, res) => {
         }
     }
     catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).send("Internal Server Error");
     }
 });
 
 app.post("/blog/edit/:id", async (req, res) => {
     const id = req.params.id;
+    const newData = req.body;
+
     try {
         if (req.session && req.session.isLoggedIn) {
             const username = req.session.username;
-
             const userFilePath = path.join(accountsPath, `${username}.json`);
             const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
             
             if (userData.ownedBlogs.includes(parseInt(id))) {
                 const blogData = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
+                
                 if (!blogData) {
                     throw new Error(`File "${id}.json" is empty or could not be read.`);
                 }
 
-                const newData = req.body;
+                const builtBlogList = await Promise.all(newData.blogList.map(async (blog) => {
+                    const images = await Promise.all(blog.images.map(async (img) => {
+                        const files = await fs.readdir(imgPath);
+                        for (const fileName of files) {
+                            const fileData = await fs.readFile(path.join(imgPath, fileName), "utf8");
+                            if (fileData === img.src) {
+                                return parseInt(fileName.split('.')[0]);
+                            }
+                        }
+                
+                        const numbers = files.filter(file => /^\d+\.db$/.test(file)).map(file => parseInt(file.split('.')[0]));
+                        let highestNumber = 0;
+                        if (numbers.length > 0) {
+                            highestNumber = Math.max(...numbers) + 1;
+                        }
+                
+                        await fs.writeFile(path.join(imgPath, `${highestNumber}.db`), img.src);
 
+                        return highestNumber;
+                    }));
+                    return {
+                        title: blog.title,
+                        date: blog.date,
+                        images: images,
+                        content: blog.content
+                    };
+                }));
+                
                 const data = {
-                    author: blogData.author, 
-                    title: newData.title, 
+                    id: id,
+                    title: newData.title,
                     posted: blogData.posted, 
-                    tags: newData.preview, 
-                    preview: newData.preview, 
-                    blogList: newData.blogList,
-                }
+                    tags: newData.tags,
+                    preview: newData.preview,
+                    blogList: await Promise.all(builtBlogList)
+                };
+                
 
                 await fs.writeFile(path.join(blogPath, `${id}.json`), JSON.stringify(data));
-
                 res.redirect("/blog/edit/" + id);
-            }
-            else {
+            } else {
                 res.redirect("/home");
             }
         } else {
             res.redirect("/login");
         }
-    }
-    catch (error) {
-        console.log(error)
+    } catch (error) {
+        console.log(error);
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 app.get("/blog/new", async (req, res) => {
     res.render("blog/new.ejs");
