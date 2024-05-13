@@ -1,13 +1,13 @@
 <div id="filterMenu">
     <div id="filters">
         <label for="cars" class="filter">Cars: </label>
-        <input type="checkbox" class="filter" name="cars" onclick="addFilter('cars')">
+        <input type="checkbox" class="filter" name="cars" onclick="addFilter('cars')" <% if (activeFilters && activeFilters.includes('cars')) { %> checked <% } %> >
         <label for="family" class="filter">Family: </label>
-        <input type="checkbox" class="filter" name="family" onclick="addFilter('family')">
+        <input type="checkbox" class="filter" name="family" onclick="addFilter('family')" <% if (activeFilters && activeFilters.includes('family')) { %> checked <% } %>>
         <label for="money" class="filter">Money: </label>
-        <input type="checkbox" class="filter" name="money" onclick="addFilter('money')">
+        <input type="checkbox" class="filter" name="money" onclick="addFilter('money')" <% if (activeFilters && activeFilters.includes('money')) { %> checked <% } %>>
         <label for="computers" class="filter">Computers: </label>
-        <input type="checkbox" class="filter" name="computers" onclick="addFilter('computers')">
+        <input type="checkbox" class="filter" name="computers" onclick="addFilter('computers')" <% if (activeFilters && activeFilters.includes('computers')) { %> checked <% } %>>
     </div>
     <div id="filterBar">
         <button id="filterSearchBtn" onclick="search()">Sök</button>

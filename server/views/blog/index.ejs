@@ -1,32 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bloggar</title>
-    <link rel="stylesheet" href="/style/blog.css">
-</head>
-<body>
+<% if(!blogData) { %>
+    <p>No blog found.</p>
+<% } else { %>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title><%= blogData.title %></title>
+        <link rel="stylesheet" href="/style/style.css">
+        <link rel="stylesheet" href="/style/blog.css">
+    </head>
+    <body>
 
-<div class="header">
-    <h2>Blog Name</h2>
-</div>
+    <div class="header">
+        <h2><%= blogData.title %></h2>
+        <h6>Author: <%= blogData.author %></h6>
+        <h6><%= blogData.posted %></h6>
+    </div>
 
-<div class="row">
-    <div class="card">
-        <h2>TITLE HEADING</h2>
-        <h5>Title description, Dec 7, 2017</h5>
-        <div class="fakeimg" style="height:200px;">Image</div>
-        <p>Some text..</p>
-        <p>Sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+    <div class="row">
+        <% if (blogData.blogList) {%>
+            <% for (var i = 0; i < blogData.blogList.length; i++) { %>
+                <% const blog = blogData.blogList[i]; %>
+                <div class="card">
+                    <h1><%= blog.title %></h1>
+                    <h5><%= blog.date %></h5>
+                    <div class="images">
+                        <% for(var j = 0; j < blog.images.length; j++) { %>
+                            <div class="imgholder">
+                                <img style="max-width: 100%;" src="<%= blog.images[j] %>" alt="">
+                            </div>
+                        <% } %>
+                    </div>
+                    <p><%= blog.content %></p>
+                </div>
+            <% } %>
+        <% } %>
     </div>
-    <div class="card">
-        <h2>TITLE HEADING</h2>
-        <h5>Title description, Sep 2, 2017</h5>
-        <div class="fakeimg" style="height:200px;">Image</div>
-        <p>Some text..</p>
-        <p>Sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
-    </div>
-</div>
-</body>
-</html>
+    </body>
+    </html>
+<% } %>

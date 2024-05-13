@@ -34,6 +34,10 @@ export async function blogs() {
                     throw new Error(`File "${fileName}" is empty or could not be read.`);
                 }
 
+                if (fileData.posted === "") {
+                    return null;
+                }
+
                 const data = {
                     id: fileName.split(".")[0],
                     title: fileData.title,
@@ -74,7 +78,7 @@ export async function userBlogs(ownedBlogs) {
                     id: fileName.split(".")[0],
                     title: fileData.title,
                     author: fileData.author,
-                    posted: fileData.posted,
+                    posted: fileData.posted === "" ? "Not posted" : fileData.posted,
                     tags: fileData.tags,
                     preview: fileData.preview,
                     owner: true,
@@ -202,6 +206,7 @@ app.post("/blog/edit/:id", async (req, res) => {
                 
                 const data = {
                     id: id,
+                    author: blogData.author,
                     title: newData.title,
                     posted: blogData.posted, 
                     tags: newData.tags,
@@ -224,6 +229,9 @@ app.post("/blog/edit/:id", async (req, res) => {
     }
 });
 
+app.post("/blog/post/:id", async (req, res) => {
+    res.render("blog/new.ejs");
+});
 
 app.get("/blog/new", async (req, res) => {
     res.render("blog/new.ejs");
@@ -252,7 +260,6 @@ app.post("/blog/new", async (req, res) => {
                 const fileContent = {author: username, title: title, posted: "", tags: [], preview: "", blogList: []};
     
                 await fs.writeFile(path.join(blogPath, `${newFileName}.json`), JSON.stringify(fileContent));
-                await fs.mkdir(path.join(blogContentPath, `${newFileName}`));
     
                 userData.ownedBlogs.push(newFileName)
                 await fs.writeFile(path.join(accountsPath, `${username}.json`), JSON.stringify(userData));
@@ -274,20 +281,70 @@ app.post("/blog/new", async (req, res) => {
 app.get("/blog/:id", async (req, res) => {
     const id = req.params.id;
     try {
-        const MainFile = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
-        if (!MainFile) {
+        const blogData = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
+        if (!blogData) {
             throw new Error(`File "${id}.json" is empty or could not be read.`);
         }
-
-        const fileData = {
+        
+        const builtBlogList = await Promise.all(blogData.blogList.map(async (blog) => {
+            const images = await Promise.all(blog.images.map(async (id) => {
+                const src = await fs.readFile(path.join(imgPath, id + ".db"), "utf8");
+                return { src };
+            }));
+            return {
+                title: blog.title,
+                date: blog.date,
+                images: images,
+                content: blog.content
+            };
+        }));
+        
+        const data = {
             id: id,
-            title: MainFile.title,
-            author: MainFile.author,
-            posted: MainFile.posted,
-            tags: MainFile.tags,
-            preview: MainFile.preview
+            author: blogData.author,
+            title: blogData.title,
+            posted: blogData.posted, 
+            blogList: builtBlogList
+        };
+
+        res.render("blog/index.ejs", { blogData: data });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/home/:data", async (req, res) => {
+    try {
+        if (req.session && req.session.isLoggedIn) {
+
+            const data = JSON.parse(req.params.data);
+            const activeFilters = data.filters || [];
+            const blogSearch = data.search || "";
+
+            const username = req.session.username;
+            const userFilePath = path.join(accountsPath, username + ".json");
+    
+            const fileData = await fs.readFile(userFilePath, "utf8");
+            const userData = JSON.parse(fileData);
+    
+            const ownedBlogs = userData.ownedBlogs;
+            const allBlogData = await userBlogs(ownedBlogs);
+
+            const filterBlogData = activeFilters.length > 0 ? allBlogData.filter(blog => {
+                return activeFilters.every(filter => blog.tags.includes(filter));
+            }) : allBlogData;
+
+            const titleBlogData = blogSearch ? filterBlogData.filter(item => item.title.toLowerCase().includes(blogSearch.toLowerCase())) : filterBlogData;
+            const authorBlogData = blogSearch ? filterBlogData.filter(item => item.author.toLowerCase().includes(blogSearch.toLowerCase())) : filterBlogData;
+
+            const finalData = [...new Set([...titleBlogData, ...authorBlogData])];
+    
+            res.render("home/index.ejs", { blogs: finalData, activeFilters: JSON.stringify(activeFilters), blogSearch: blogSearch});
+        } else {
+            res.redirect("/login");
         }
-        res.render("home/index.ejs", { blogs: blogData, activeFilters: {}, blogSearch: ""});
     }
     catch (error) {
         console.log(error)
@@ -307,7 +364,7 @@ app.get("/home", async (req, res) => {
             const ownedBlogs = userData.ownedBlogs;
             const blogData = await userBlogs(ownedBlogs);
     
-            res.render("home/index.ejs", { blogs: blogData, activeFilters: {}, blogSearch: ""});
+            res.render("home/index.ejs", { blogs: blogData, activeFilters: [], blogSearch: ""});
         } else {
             res.redirect("/login");
         }
@@ -397,19 +454,35 @@ app.post("/signup", async (req, res) => {
     }
 });
 
-app.get("/:data", (req, res) => {
-    const data = JSON.parse(req.params.data);
+app.get("/:data", async (req, res) => {
+    try {
+        const data = JSON.parse(req.params.data);
+        const activeFilters = data.filters || [];
+        const blogSearch = data.search || "";
 
-    const activeFilters = data.filters;
-    const blogSearch = data.search;
+        const allBlogData = await blogs();
 
-    res.render("list/index.ejs", { activeFilters: activeFilters, blogSearch: blogSearch});
+        const filterBlogData = activeFilters.length > 0 ? allBlogData.filter(blog => {
+            return activeFilters.every(filter => blog.tags.includes(filter));
+        }) : allBlogData;
+
+        const titleBlogData = blogSearch ? filterBlogData.filter(item => item.title.toLowerCase().includes(blogSearch.toLowerCase())) : filterBlogData;
+        const authorBlogData = blogSearch ? filterBlogData.filter(item => item.author.toLowerCase().includes(blogSearch.toLowerCase())) : filterBlogData;
+
+        const finalData = [...new Set([...titleBlogData, ...authorBlogData])];
+
+        res.render("list/index.ejs", { blogs: finalData, activeFilters: JSON.stringify(activeFilters), blogSearch: blogSearch });
+    } catch (error) {
+        console.error("Error occurred:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
+
 
 app.get("/", async (req, res) => {
     try {
         const blogData = await blogs();
-        res.render("list/index.ejs", { blogs: blogData, activeFilters: {}, blogSearch: ""});
+        res.render("list/index.ejs", { blogs: blogData, activeFilters: [], blogSearch: ""});
     } catch (error) {
         console.error("Error rendering view:", error);
         res.status(500).send("Internal Server Error");

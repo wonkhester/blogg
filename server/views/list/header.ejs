@@ -5,9 +5,21 @@
     <button id="accountBtn" onclick="window.location.href = '/home'">Account</button>
 </div>
 <%- include("../addons/filterMenu.ejs") %>
+
+<% if (activeFilters.length > 0) { %>
+    <script>
+        var tempElement = document.createElement('div');
+        tempElement.innerHTML = '<%= activeFilters %>';
+        var decodedString = tempElement.textContent || tempElement.innerText;
+        var activeFilters = JSON.parse(decodedString);
+    </script>
+<% } else { %>
+    <script>
+        var activeFilters = [];
+    </script>
+<% } %>
 <script>
     var blogSearch = '<%= blogSearch ? blogSearch : "" %>';
-    var activeFilters = '<%= activeFilters %>';
 
     document.getElementById("blogSearchInput").value = blogSearch;
 
@@ -17,7 +29,12 @@
     }
 
     function addFilter(filter) {
-        activeFilters[filter] = 1;
+        if (activeFilters.includes(filter)) {
+            activeFilters = activeFilters.filter(item => item !== filter);
+        }
+        else {
+            activeFilters.push(filter);
+        }
     }
 
     function searchBlog(e) {
@@ -28,7 +45,19 @@
     }
 
     function search() {
-        var filtersString = JSON.stringify(activeFilters);
-        window.location.href = `/{search=${blogSearch}, filters=${filtersString}}`;
+        if (blogSearch) {
+            if (activeFilters && activeFilters.length > 0) {
+                window.location.href = `/{"search":"${blogSearch}", "filters":${JSON.stringify(activeFilters)}}`;
+            }
+            else {
+                window.location.href = `/{"search":"${blogSearch}"}`;
+            }
+        }
+        else if (activeFilters && activeFilters.length > 0) {
+            window.location.href = `/{"filters":${JSON.stringify(activeFilters)}}`;
+        }
+        else {
+            window.location.href = `/`;
+        }
     }
 </script>
