@@ -11,58 +11,61 @@
         <link rel="stylesheet" href="/style/blog.css">
     </head>
     <body>
-        <div class="header" style="display: grid;">
-            <button onclick="save()" style="position: absolute; width: 100px; height: 30px; font-size: large; justify-content: center;">Save</button>
-            <label for="title">Title: </label>
-            <input type="text" name="title" id="title" style="width: 50%; height: 70%; font-size: 6rem; justify-self: center;" value="<%= blogData.title %>">
-            <label for="preview" style="font-size: x-large;">Preview:</label>
-            <textarea id="preview" class="preview" name="preview" placeholder="Some text.." style="resize: none; width: 100%; overflow: hidden;"><%= blogData.preview %></textarea> 
-            <label for="tags" style="font-size: x-large;">Tags</label>
-            <div name="tags">
-                <label for="cars" style="font-size: large;">Cars: </label>
-                <input type="checkbox" id="cars" name="cars" <% if (blogData.tags.includes("cars")) { %> checked <% } %>>
-                <label for="family" style="font-size: large;">Family: </label>
-                <input type="checkbox" id="family" name="family" <% if (blogData.tags.includes("family")) { %> checked <% } %>>
-                <label for="money" style="font-size: large;">Money: </label>
-                <input type="checkbox" id="money" name="money" <% if (blogData.tags.includes("money")) { %> checked <% } %>>
-                <label for="computers" style="font-size: large;">Computers: </label>
-                <input type="checkbox" id="computers" name="computers" <% if (blogData.tags.includes("computers")) { %> checked <% } %>>
+        <%- include("header.ejs") %>
+        <div id="blog">
+            <div class="header" style="display: grid;">
+                <button onclick="save()" style="position: absolute; width: 100px; height: 30px; font-size: large; justify-content: center;">Save</button>
+                <label for="title">Title: </label>
+                <input type="text" name="title" id="title" style="width: 50%; height: 70%; font-size: 6rem; justify-self: center;" value="<%= blogData.title %>">
+                <label for="preview" style="font-size: x-large;">Preview:</label>
+                <textarea id="preview" class="preview" name="preview" placeholder="Some text.." style="resize: none; width: 100%; overflow: hidden;"><%= blogData.preview %></textarea> 
+                <label for="tags" style="font-size: x-large;">Tags</label>
+                <div name="tags">
+                    <label for="cars" style="font-size: large;">Cars: </label>
+                    <input type="checkbox" id="cars" name="cars" <% if (blogData.tags.includes("cars")) { %> checked <% } %>>
+                    <label for="family" style="font-size: large;">Family: </label>
+                    <input type="checkbox" id="family" name="family" <% if (blogData.tags.includes("family")) { %> checked <% } %>>
+                    <label for="money" style="font-size: large;">Money: </label>
+                    <input type="checkbox" id="money" name="money" <% if (blogData.tags.includes("money")) { %> checked <% } %>>
+                    <label for="computers" style="font-size: large;">Computers: </label>
+                    <input type="checkbox" id="computers" name="computers" <% if (blogData.tags.includes("computers")) { %> checked <% } %>>
+                </div>
             </div>
-        </div>
-
-        <button onclick="newCard()" style="display: flex; width: 100%; height: 30px; font-size: large; justify-content: center; margin-top: 20px;">New post</button>
-
-        <div id="cardList" class="row">
-            <% if (blogData.blogList) {%>
-                <% for(var i = 0; i < blogData.blogList.length; i++) { %>
-                    <% const blog = blogData.blogList[i]; %>
-                    <div class="card" id="card_<%= i %>">
-                        <button onclick="deleteCard(this)" style="display: flex; position: absolute; align-self: flex-end; width: 80px; font-size: x-large; color: red;justify-content: center;" >Delete</button>
-                        <input type="text" class="input" placeholder="Your title.." style="font-size: x-large; width: calc(100% - 90px);" value="<%= blog.title %>">
-                        <h5 class="date"><%= blog.date %></h5>
-                        <div id="images_<%= i %>" class="images">
-                            <% var j = 0; for(j; j < blog.images.length; j++) { %>
-                                <div class="imgHolder">
-                                    <input type="file" id="images_<%= i %>_imageInput_<%= j %>" name="image" accept="image/*" onchange="previewImage('images_<%= i %>_imageInput_<%= j %>', 'images_<%= i %>_imagePreview_<%= j %>')">
-                                    <button style="color: red;" onclick="deleteImage('images_<%= i %>_imagePreview_<%= j %>')" >Remove</button>
-                                    <div id="images_<%= i %>_imagePreview_<%= j %>" class="img">
-                                        <img style="max-width: 100%;" src="<%= blog.images[j].src %>" alt="">
+    
+            <button onclick="newCard()" style="display: flex; width: 100%; height: 30px; font-size: large; justify-content: center; margin-top: 20px;">New post</button>
+    
+            <div id="cardList" class="row">
+                <% if (blogData.blogList) {%>
+                    <% for(var i = 0; i < blogData.blogList.length; i++) { %>
+                        <% const blog = blogData.blogList[i]; %>
+                        <div class="card" id="card_<%= i %>">
+                            <button onclick="deleteCard(this)" style="display: flex; position: absolute; align-self: flex-end; width: 80px; font-size: x-large; color: red;justify-content: center;" >Delete</button>
+                            <input type="text" class="input" placeholder="Your title.." style="font-size: x-large; width: calc(100% - 90px);" value="<%= blog.title %>">
+                            <h5 class="date"><%= blog.date %></h5>
+                            <div id="images_<%= i %>" class="images">
+                                <% var j = 0; for(j; j < blog.images.length; j++) { %>
+                                    <div class="imgHolder">
+                                        <input type="file" id="images_<%= i %>_imageInput_<%= j %>" name="image" accept="image/*" onchange="previewImage('images_<%= i %>_imageInput_<%= j %>', 'images_<%= i %>_imagePreview_<%= j %>')">
+                                        <button style="color: red;" onclick="deleteImage('images_<%= i %>_imagePreview_<%= j %>')" >Remove</button>
+                                        <div id="images_<%= i %>_imagePreview_<%= j %>" class="img">
+                                            <img style="max-width: 100%;" src="<%= blog.images[j].src %>" alt="">
+                                        </div>
                                     </div>
-                                </div>
-                            <% } %>
-                            
-                            <% if (blog.images.length < 5) { %>
-                                <div class="imgHolder">
-                                    <input type="file" id="images_<%= i %>_imageInput_<%= j %>" name="image" accept="image/*" onchange="previewImage('images_<%= i %>_imageInput_<%= j %>', 'images_<%= i %>_imagePreview_<%= j %>')">
-                                    <div id="images_<%= i %>_imagePreview_<%= j %>" class="img"></div>
-                                </div>
-                            <% } %>
+                                <% } %>
+                                
+                                <% if (blog.images.length < 5) { %>
+                                    <div class="imgHolder">
+                                        <input type="file" id="images_<%= i %>_imageInput_<%= j %>" name="image" accept="image/*" onchange="previewImage('images_<%= i %>_imageInput_<%= j %>', 'images_<%= i %>_imagePreview_<%= j %>')">
+                                        <div id="images_<%= i %>_imagePreview_<%= j %>" class="img"></div>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <h4>Your Text:</h4>
+                            <textarea id="content_<%= i %>" class="content" name="content" placeholder="Some text.." style="resize: none; width: 100%; overflow: hidden;"><%= blog.content %></textarea> 
                         </div>
-                        <h4>Your Text:</h4>
-                        <textarea id="content_<%= i %>" class="content" name="content" placeholder="Some text.." style="resize: none; width: 100%; overflow: hidden;"><%= blog.content %></textarea> 
-                    </div>
+                    <% } %>
                 <% } %>
-            <% } %>
+            </div>
         </div>
     <script>
 
@@ -173,7 +176,7 @@
             titleInput.classList.add("input");
 
             const dateElement = document.createElement("h5");
-            dateElement.textContent = new Date().toDateString();
+            dateElement.textContent = new Date().toISOString().slice(0,10);
             dateElement.classList.add("date");
 
             const imagesContainer = document.createElement("div");
@@ -233,25 +236,64 @@
             cardDiv.remove();
         }
 
-        function deleteImage(id) {
-            document.getElementById(id).remove();
+        function deleteImage(previewId) {
+            const imgHolder = document.getElementById(previewId).parentElement;
+            const imagesContainer = imgHolder.parentElement;
+            const allImgHolders = imagesContainer.querySelectorAll('.imgHolder');
+            const indexToDelete = Array.from(allImgHolders).findIndex(holder => holder === imgHolder);
+            
+            imgHolder.querySelector("img").remove();
 
-            const imagesId = id.split("_")[0] + "_" + id.split("_")[1];
-            const images = document.getElementById(imagesId)
-
-            for (var i = 0; i < images.childNodes.length - 1; i++) {
-                if (!images.children[i].querySelector(".img")) {
-                    const nextImgContainer = images.children[i].querySelector(".img");
-                    images.children[i].querySelector(".img").appendChild(nextImgContainer.children[0]);
+            if (allImgHolders.length < 5) {
+                // Logic to rearrange images when there are fewer than 5
+                for (var i = parseInt(previewId.split("_")[3]); i < allImgHolders.length - 2; i++) {
+                    allImgHolders[i].children[2].appendChild(allImgHolders[i + 1].querySelector("img"));
                 }
+                allImgHolders[allImgHolders.length - 1].remove();
+                allImgHolders[allImgHolders.length - 2].remove();
+            } else {
+                // Logic when there are exactly 5 images
+                allImgHolders[allImgHolders.length - 1].remove();
+
+                // Update inputId and nextInputId
+                const inputId = imagesContainer.id + "_imageInput_0";
+                const baseInputId = inputId.split("").slice(0, -1).join("");
+                const nextInputId = baseInputId + (allImgHolders.length - 1);
+
+                // Create the next input element
+                const nextInput = document.createElement("input");
+                nextInput.type = "file";
+                nextInput.id = nextInputId;
+                nextInput.name = "image";
+                nextInput.accept = "image/*";
+                nextInput.onchange = function() {
+                    previewImage(nextInputId, nextInputId.replace("imageInput", "imagePreview"));
+                };
+
+                // Create the image preview element
+                const imgHolder = document.createElement("div");
+                imgHolder.classList.add("imgHolder");
+                imgHolder.appendChild(nextInput);
+
+                const imagePreview = document.createElement("div");
+                imagePreview.id = nextInputId.replace("imageInput", "imagePreview");
+                imagePreview.classList.add("img");
+                imgHolder.appendChild(imagePreview);
+
+                // Append the new input to the images container
+                imagesContainer.appendChild(imgHolder);
             }
         }
+
 
         function previewImage(inputId, previewId) {
             const preview = document.getElementById(previewId);
             const fileInput = document.getElementById(inputId);
             const file = fileInput.files[0];
             const reader = new FileReader();
+            
+            const baseInputId = inputId.split("").slice(0, -1).join("");
+            const NextInputIdNumber = parseInt(inputId.slice(-1)) + 1;
 
             reader.onload = function(e) {
                 const img = document.createElement("img");
@@ -260,12 +302,18 @@
                 img.style.maxWidth = "100%";
                 preview.innerHTML = "";
                 preview.appendChild(img);
+
+                const removeBtn = document.createElement("button");
+                removeBtn.style.color = "red";
+                removeBtn.onclick = function() {
+                    deleteImage(preview.id);
+                };
+                removeBtn.textContent = "Remove"
+                preview.parentElement.insertBefore(removeBtn, preview);
             };
 
             reader.readAsDataURL(file);
 
-            const baseInputId = inputId.split("").slice(0, -1).join("");
-            const NextInputIdNumber = parseInt(inputId.slice(-1)) + 1;
             if (NextInputIdNumber < 5) {
                 const nextInputId = baseInputId + NextInputIdNumber;
                 if (!document.getElementById(nextInputId)) {

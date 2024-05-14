@@ -1,0 +1,18 @@
+<div style="margin-top: 40px;">
+    <h2 style="margin: 0 0 20px 0;">Comments:</h2>
+
+    <form method="post" action="/blog/comment/<%= blogData.id %>"> 
+        <label for="commentInput">Want to make a comment?:</label>
+        <input type="text" id="commentInput" name="commentInput" >
+    </form>
+    <div style="margin-top: 20px;">
+        <% if (blogData.comments && blogData.comments.length > 0) { %>
+            <% for (var i = 0; i < blogData.comments.length; i++) { %>
+                <div id="comment">
+                    <h4><%= blogData.comments[i].poster %></h4>
+                    <h5><%= blogData.comments[i].comment %></h5>
+                </div>
+            <% } %>
+        <% } %>
+    </div>
+</div>

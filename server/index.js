@@ -131,8 +131,9 @@ app.get("/blog/edit/:id", async (req, res) => {
                     posted: blogData.posted, 
                     tags: blogData.tags,
                     preview: blogData.preview,
-                    blogList: await Promise.all(builtBlogList)
+                    blogList: await Promise.all(builtBlogList),
                 };
+
 
                 res.render("blog/edit.ejs", { blogData: data });
             }
@@ -211,7 +212,8 @@ app.post("/blog/edit/:id", async (req, res) => {
                     posted: blogData.posted, 
                     tags: newData.tags,
                     preview: newData.preview,
-                    blogList: await Promise.all(builtBlogList)
+                    blogList: await Promise.all(builtBlogList),
+                    comments: blogData.comments, 
                 };
                 
 
@@ -229,8 +231,71 @@ app.post("/blog/edit/:id", async (req, res) => {
     }
 });
 
-app.post("/blog/post/:id", async (req, res) => {
-    res.render("blog/new.ejs");
+app.post("/blog/comment/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        if (req.session && req.session.isLoggedIn) {
+            const username = req.session.username;
+
+            const comment = req.body.commentInput;
+            
+            const blogData = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
+                
+            if (!blogData) {
+                throw new Error(`File "${id}.json" is empty or could not be read.`);
+            }
+
+            blogData.comments.push({poster: username, comment: comment})
+
+            await fs.writeFile(path.join(blogPath, `${id}.json`), JSON.stringify(blogData));
+
+            res.redirect("/blog/" + id);
+        }
+        else {
+            res.redirect("/login");
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/blog/post/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        if (req.session && req.session.isLoggedIn) {
+            const username = req.session.username;
+            const userFilePath = path.join(accountsPath, `${username}.json`);
+            const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
+            
+            if (userData.ownedBlogs.includes(parseInt(id))) {
+                var blogData = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
+
+                if (blogData.posted === "") {
+                    blogData.posted = new Date().toISOString().slice(0,10);
+                }
+                else {
+                    blogData.posted = "";
+                }
+
+                await fs.writeFile(path.join(blogPath, `${id}.json`), JSON.stringify(blogData));
+
+                res.redirect("/home");
+            }
+            else {
+                res.redirect("/home");
+            }
+        }
+        else {
+            res.redirect("/login");
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 app.get("/blog/new", async (req, res) => {
@@ -257,7 +322,7 @@ app.post("/blog/new", async (req, res) => {
                 }
     
                 const newFileName = highestNumber + 1;
-                const fileContent = {author: username, title: title, posted: "", tags: [], preview: "", blogList: []};
+                const fileContent = {author: username, title: title, posted: "", tags: [], preview: "", blogList: [], comments: []};
     
                 await fs.writeFile(path.join(blogPath, `${newFileName}.json`), JSON.stringify(fileContent));
     
@@ -307,6 +372,7 @@ app.get("/blog/:id", async (req, res) => {
             title: blogData.title,
             posted: blogData.posted, 
             blogList: await builtBlogList(),
+            comments: blogData.comments,
         };
 
         res.render("blog/index.ejs", { blogData: data });

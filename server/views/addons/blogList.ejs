@@ -9,9 +9,18 @@
                         <%= blog.title %>
                     </a>
                     <% if (blog.owner) { %>
-                        <a class="blogHeader" href="/blog/edit/<%= blog.id %>">
-                            Edit
-                        </a>
+                        <div>
+                            <a class="blogHeader" href="/blog/post/<%= blog.id %>">
+                                <% if (blog.posted === "Not posted") { %>
+                                    Post
+                                <% } else { %>
+                                    Remove post
+                                <% } %>
+                            </a>
+                            <a class="blogHeader" href="/blog/edit/<%= blog.id %>" style="margin: 0 0 0 10px;">
+                                Edit
+                            </a>
+                        </div>
                     <% } %>
                 </div>
                 <h1 class="author">Author: <%= blog.author %></h1>
@@ -31,4 +40,19 @@
             </div>
         </div>
     <% }) %>
+    <script>
+        async function post(id) {
+            await fetch("/blog/post/" + id, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+            });
+        }
+    </script>
 <% } %>        

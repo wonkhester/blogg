@@ -10,6 +10,7 @@ button:hover {
     display: flex;
     position: fixed;
     align-items: center;
+    z-index: 10;
     width: 100vw;
     height: 60px;
     background-color: rgb(30, 30, 30);
@@ -19,4 +20,12 @@ button:hover {
     font-size: xx-large;
     color: white;
     padding-left: 10px;
+}
+#accountBtn {
+    width: 150px;
+    height: 40px;
+    margin-left: 20px;
+    font-size: medium;
+    color: white;
+    background-color: rgb(105, 105, 105);
 }
