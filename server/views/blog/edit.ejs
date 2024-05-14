@@ -44,6 +44,7 @@
                             <% var j = 0; for(j; j < blog.images.length; j++) { %>
                                 <div class="imgHolder">
                                     <input type="file" id="images_<%= i %>_imageInput_<%= j %>" name="image" accept="image/*" onchange="previewImage('images_<%= i %>_imageInput_<%= j %>', 'images_<%= i %>_imagePreview_<%= j %>')">
+                                    <button style="color: red;" onclick="deleteImage('images_<%= i %>_imagePreview_<%= j %>')" >Remove</button>
                                     <div id="images_<%= i %>_imagePreview_<%= j %>" class="img">
                                         <img style="max-width: 100%;" src="<%= blog.images[j].src %>" alt="">
                                     </div>
@@ -94,10 +95,7 @@
                 const images = Array.from(child.querySelectorAll(".images")).map((imgContainer) => {
                     const imgSources = Array.from(imgContainer.querySelectorAll(".img")).map((imgElement) => {
                         if (imgElement.childNodes.length > 0) {
-                            console.log(imgElement)
-                            console.log(imgElement.childNodes[0])
-                            console.log(imgElement.childNodes[0].src)
-                            return imgElement.childNodes[0].src;
+                            return imgElement.firstElementChild.src;
                         }
                         return "";
                     });
@@ -131,6 +129,7 @@
             await postData("/blog/edit/<%= blogData.id %>", data)
                 .then(response => {
                     console.log('Success:', response);
+                    window.location.href = "/home";
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -232,6 +231,20 @@
         function deleteCard(button) {
             var cardDiv = button.parentElement;
             cardDiv.remove();
+        }
+
+        function deleteImage(id) {
+            document.getElementById(id).remove();
+
+            const imagesId = id.split("_")[0] + "_" + id.split("_")[1];
+            const images = document.getElementById(imagesId)
+
+            for (var i = 0; i < images.childNodes.length - 1; i++) {
+                if (!images.children[i].querySelector(".img")) {
+                    const nextImgContainer = images.children[i].querySelector(".img");
+                    images.children[i].querySelector(".img").appendChild(nextImgContainer.children[0]);
+                }
+            }
         }
 
         function previewImage(inputId, previewId) {

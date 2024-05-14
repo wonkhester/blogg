@@ -286,25 +286,27 @@ app.get("/blog/:id", async (req, res) => {
             throw new Error(`File "${id}.json" is empty or could not be read.`);
         }
         
-        const builtBlogList = await Promise.all(blogData.blogList.map(async (blog) => {
-            const images = await Promise.all(blog.images.map(async (id) => {
-                const src = await fs.readFile(path.join(imgPath, id + ".db"), "utf8");
-                return { src };
+        const builtBlogList = async () => {
+            return Promise.all(blogData.blogList.map(async (blog) => {
+                const images = await Promise.all(blog.images.map(async (id) => {
+                    const src = await fs.readFile(path.join(imgPath, id + ".db"), "utf8");
+                    return { src };
+                }));
+                return {
+                    title: blog.title,
+                    date: blog.date,
+                    images: images,
+                    content: blog.content
+                };
             }));
-            return {
-                title: blog.title,
-                date: blog.date,
-                images: images,
-                content: blog.content
-            };
-        }));
+        };
         
         const data = {
             id: id,
             author: blogData.author,
             title: blogData.title,
             posted: blogData.posted, 
-            blogList: builtBlogList
+            blogList: await builtBlogList(),
         };
 
         res.render("blog/index.ejs", { blogData: data });

@@ -12,30 +12,34 @@
     </head>
     <body>
 
-    <div class="header">
-        <h2><%= blogData.title %></h2>
-        <h6>Author: <%= blogData.author %></h6>
-        <h6><%= blogData.posted %></h6>
-    </div>
-
-    <div class="row">
-        <% if (blogData.blogList) {%>
-            <% for (var i = 0; i < blogData.blogList.length; i++) { %>
-                <% const blog = blogData.blogList[i]; %>
-                <div class="card">
-                    <h1><%= blog.title %></h1>
-                    <h5><%= blog.date %></h5>
-                    <div class="images">
-                        <% for(var j = 0; j < blog.images.length; j++) { %>
-                            <div class="imgholder">
-                                <img style="max-width: 100%;" src="<%= blog.images[j] %>" alt="">
-                            </div>
-                        <% } %>
+    <%- include("header.ejs") %>
+    <div id="blog">
+        <div class="header">
+            <h2><%= blogData.title %></h2>
+            <h6>Author: <%= blogData.author %></h6>
+            <h6><%= blogData.posted %></h6>
+        </div>
+    
+        <div class="row">
+            <% if (blogData.blogList) {%>
+                <% for (var i = 0; i < blogData.blogList.length; i++) { %>
+                    <% const blog = blogData.blogList[i]; %>
+                    <div class="card">
+                        <h1><%= blog.title %></h1>
+                        <h5><%= blog.date %></h5>
+                        <div class="images">
+                            <% for(var j = 0; j < blog.images.length; j++) { %>
+                                <div class="imgHolder">
+                                    <img style="max-width: 100%;" src="<%= blog.images[j].src %>" alt="">
+                                </div>
+                            <% } %>
+                        </div>
+                        <p><%= blog.content %></p>
                     </div>
-                    <p><%= blog.content %></p>
-                </div>
+                <% } %>
             <% } %>
-        <% } %>
+        </div>
+
     </div>
     </body>
     </html>
