@@ -2,7 +2,12 @@
     <a id="homeBtn" href="/">Mystery blog</a>
     <input id="blogSearchInput" type="text" onkeypress="searchBlog(event)">
     <button id="filterBtn" onclick="showFilterMenu()">Filters</button>
-    <button id="accountBtn" onclick="window.location.href = '/home'">Account</button>
+    <% if (isLoggedIn) { %>
+        <button id="accountBtn" onclick="window.location.href = '/home'" style="width: 80px;">Home</button>
+        <button id="accountBtn" onclick="window.location.href = '/logout'" style="width: 80px;">logout</button>
+    <% } else { %>
+        <button id="accountBtn" onclick="window.location.href = '/login'">Login</button>
+    <% } %>
 </div>
 <%- include("../addons/filterMenu.ejs") %>
 

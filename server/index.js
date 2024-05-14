@@ -135,7 +135,7 @@ app.get("/blog/edit/:id", async (req, res) => {
                 };
 
 
-                res.render("blog/edit.ejs", { blogData: data });
+                res.render("blog/edit.ejs", { blogData: data, edit: true});
             }
             else {
                 res.redirect("/home");
@@ -231,6 +231,64 @@ app.post("/blog/edit/:id", async (req, res) => {
     }
 });
 
+app.get("/blog/delete/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        if (req.session && req.session.isLoggedIn) {
+            const username = req.session.username;
+
+            const userFilePath = path.join(accountsPath, `${username}.json`);
+            const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
+            
+            if (userData.ownedBlogs.includes(parseInt(id))) {
+                res.render("blog/delete.ejs", { id: id });
+            }
+        }
+        else {
+            res.redirect("/");
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.post("/blog/delete/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        if (req.body.input === "YES") {
+            if (req.session && req.session.isLoggedIn) {
+                const username = req.session.username;
+    
+                const userFilePath = path.join(accountsPath, `${username}.json`);
+                const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
+                
+                if (userData.ownedBlogs.includes(parseInt(id))) {
+                    await fs.unlink(path.join(blogPath, `${id}.json`));
+
+                    const blogId = userData.indexOf(id);
+                    delete userData[blogId];
+
+                    await fs.writeFile(path.join(accountsPath, `${username}.json`), userData);
+
+                    res.redirect("/home");
+                }
+            }
+            else {
+                res.redirect("/");
+            }
+        }
+        else {
+            res.redirect("/");
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 app.post("/blog/comment/:id", async (req, res) => {
     const id = req.params.id;
     try {
@@ -252,7 +310,19 @@ app.post("/blog/comment/:id", async (req, res) => {
             res.redirect("/blog/" + id);
         }
         else {
-            res.redirect("/login");
+            const comment = req.body.commentInput;
+            
+            const blogData = JSON.parse(await fs.readFile(path.join(blogPath, id + ".json"), "utf8"));
+                
+            if (!blogData) {
+                throw new Error(`File "${id}.json" is empty or could not be read.`);
+            }
+
+            blogData.comments.push({poster: "Guest", comment: comment})
+
+            await fs.writeFile(path.join(blogPath, `${id}.json`), JSON.stringify(blogData));
+
+            res.redirect("/blog/" + id);
         }
     }
     catch (error) {
@@ -375,7 +445,7 @@ app.get("/blog/:id", async (req, res) => {
             comments: blogData.comments,
         };
 
-        res.render("blog/index.ejs", { blogData: data });
+        res.render("blog/index.ejs", { blogData: data, edit: false });
     }
     catch (error) {
         console.log(error);
@@ -443,6 +513,17 @@ app.get("/home", async (req, res) => {
     }
 });
 
+app.get("/logout", async (req, res) => {
+    try {
+        req.session.username = null;
+        req.session.isLoggedIn = false;
+        res.redirect("/");
+    } catch (error) {
+        console.log(error)
+        res.redirect("/");
+    }
+});
+
 app.get("/login", (req, res) => {
     res.render("login/index.ejs");
 });
@@ -502,7 +583,6 @@ app.post("/signup", async (req, res) => {
                     };
 
                     try {
-                        // Write the user data to the file
                         await fs.writeFile(filePath, JSON.stringify(userDataObj), "utf8");
                         req.session.username = username;
                         req.session.isLoggedIn = true;
@@ -539,7 +619,7 @@ app.get("/:data", async (req, res) => {
 
         const finalData = [...new Set([...titleBlogData, ...authorBlogData])];
 
-        res.render("list/index.ejs", { blogs: finalData, activeFilters: JSON.stringify(activeFilters), blogSearch: blogSearch });
+        res.render("list/index.ejs", { blogs: finalData, activeFilters: JSON.stringify(activeFilters), blogSearch: blogSearch, isLoggedIn: req.session.isLoggedIn });
     } catch (error) {
         console.error("Error occurred:", error);
         res.status(500).send("Internal Server Error");
@@ -550,7 +630,7 @@ app.get("/:data", async (req, res) => {
 app.get("/", async (req, res) => {
     try {
         const blogData = await blogs();
-        res.render("list/index.ejs", { blogs: blogData, activeFilters: [], blogSearch: ""});
+        res.render("list/index.ejs", { blogs: blogData, activeFilters: [], blogSearch: "", isLoggedIn: req.session.isLoggedIn});
     } catch (error) {
         console.error("Error rendering view:", error);
         res.status(500).send("Internal Server Error");

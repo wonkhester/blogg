@@ -1,5 +1,5 @@
 #blogSearchInput {
-    width: calc(100vw - 80px - 210px - 80px - 190px);
+    width: calc(100vw - 600px);
     height: 40px;
     font-size: medium;
     color: white;

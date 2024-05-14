@@ -14,11 +14,11 @@
         <%- include("header.ejs") %>
         <div id="blog">
             <div class="header" style="display: grid;">
-                <button onclick="save()" style="position: absolute; width: 100px; height: 30px; font-size: large; justify-content: center;">Save</button>
-                <label for="title">Title: </label>
-                <input type="text" name="title" id="title" style="width: 50%; height: 70%; font-size: 6rem; justify-self: center;" value="<%= blogData.title %>">
-                <label for="preview" style="font-size: x-large;">Preview:</label>
-                <textarea id="preview" class="preview" name="preview" placeholder="Some text.." style="resize: none; width: 100%; overflow: hidden;"><%= blogData.preview %></textarea> 
+                <label for="title">Blog title: </label>
+                <input type="text" name="title" id="title" style="width: 50%; height: 70%; font-size: 4rem; justify-self: center;" value="<%= blogData.title %>">
+                <div id="previewMessage" style="display: none; position: absolute; background-color: rgb(40, 40, 40); padding: 10px; border: 1px solid #ccc; border-radius: 5px; max-height: 100px; font-size: medium;">This is for the text that will be shown on the blog card in the blog list so that users can preview the content in your blog</div>
+                <label for="preview" style="display: flex; align-items: center; justify-content: center; font-size: x-large;">Preview: <img id="questionImg" src="/assets/img/questionmark.png" alt="" style="width: 20px; height: 20px;" onmouseenter="document.getElementById('previewMessage').style.display = 'block'" onmouseleave="document.getElementById('previewMessage').style.display = 'none'"></label>
+                <textarea id="preview" class="preview" name="preview" placeholder="Some text.." style="resize: none; width: 50%; overflow: hidden; justify-self: center;"><%= blogData.preview %></textarea> 
                 <label for="tags" style="font-size: x-large;">Tags</label>
                 <div name="tags">
                     <label for="cars" style="font-size: large;">Cars: </label>
@@ -117,9 +117,9 @@
             });
             const tags = [
                 document.getElementById("cars").checked ? "cars" : null,
-                document.getElementById("family").checked ? "cars" : null,
-                document.getElementById("money").checked ? "cars" : null,
-                document.getElementById("computers").checked ? "cars" : null
+                document.getElementById("family").checked ? "family" : null,
+                document.getElementById("money").checked ? "money" : null,
+                document.getElementById("computers").checked ? "computers" : null
             ].filter(tag => tag !== null);
 
             const data = {
@@ -245,22 +245,18 @@
             imgHolder.querySelector("img").remove();
 
             if (allImgHolders.length < 5) {
-                // Logic to rearrange images when there are fewer than 5
                 for (var i = parseInt(previewId.split("_")[3]); i < allImgHolders.length - 2; i++) {
                     allImgHolders[i].children[2].appendChild(allImgHolders[i + 1].querySelector("img"));
                 }
                 allImgHolders[allImgHolders.length - 1].remove();
                 allImgHolders[allImgHolders.length - 2].remove();
             } else {
-                // Logic when there are exactly 5 images
                 allImgHolders[allImgHolders.length - 1].remove();
 
-                // Update inputId and nextInputId
                 const inputId = imagesContainer.id + "_imageInput_0";
                 const baseInputId = inputId.split("").slice(0, -1).join("");
                 const nextInputId = baseInputId + (allImgHolders.length - 1);
 
-                // Create the next input element
                 const nextInput = document.createElement("input");
                 nextInput.type = "file";
                 nextInput.id = nextInputId;
@@ -270,7 +266,6 @@
                     previewImage(nextInputId, nextInputId.replace("imageInput", "imagePreview"));
                 };
 
-                // Create the image preview element
                 const imgHolder = document.createElement("div");
                 imgHolder.classList.add("imgHolder");
                 imgHolder.appendChild(nextInput);
@@ -280,7 +275,6 @@
                 imagePreview.classList.add("img");
                 imgHolder.appendChild(imagePreview);
 
-                // Append the new input to the images container
                 imagesContainer.appendChild(imgHolder);
             }
         }
@@ -345,6 +339,17 @@
                 this.style.height = "auto";
                 this.style.height = (this.scrollHeight + 2) + "px";
             });
+        });
+
+        const questionImg = document.getElementById('questionImg');
+        const previewMessage = document.getElementById('previewMessage');
+
+        questionImg.addEventListener('mouseover', () => {
+            previewMessage.style.display = 'block';
+        });
+
+        questionImg.addEventListener('mouseout', () => {
+            previewMessage.style.display = 'none';
         });
     </script>
     </body>
