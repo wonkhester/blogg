@@ -241,42 +241,59 @@
             const imagesContainer = imgHolder.parentElement;
             const allImgHolders = imagesContainer.querySelectorAll('.imgHolder');
             const indexToDelete = Array.from(allImgHolders).findIndex(holder => holder === imgHolder);
-            
+
             imgHolder.querySelector("img").remove();
 
-            if (allImgHolders.length < 5) {
+            if (allImgHolders.length !== 5) {
                 for (var i = parseInt(previewId.split("_")[3]); i < allImgHolders.length - 2; i++) {
                     allImgHolders[i].children[2].appendChild(allImgHolders[i + 1].querySelector("img"));
                 }
                 allImgHolders[allImgHolders.length - 1].remove();
                 allImgHolders[allImgHolders.length - 2].remove();
             } else {
-                allImgHolders[allImgHolders.length - 1].remove();
-
-                const inputId = imagesContainer.id + "_imageInput_0";
-                const baseInputId = inputId.split("").slice(0, -1).join("");
-                const nextInputId = baseInputId + (allImgHolders.length - 1);
-
-                const nextInput = document.createElement("input");
-                nextInput.type = "file";
-                nextInput.id = nextInputId;
-                nextInput.name = "image";
-                nextInput.accept = "image/*";
-                nextInput.onchange = function() {
-                    previewImage(nextInputId, nextInputId.replace("imageInput", "imagePreview"));
-                };
-
-                const imgHolder = document.createElement("div");
-                imgHolder.classList.add("imgHolder");
-                imgHolder.appendChild(nextInput);
-
-                const imagePreview = document.createElement("div");
-                imagePreview.id = nextInputId.replace("imageInput", "imagePreview");
-                imagePreview.classList.add("img");
-                imgHolder.appendChild(imagePreview);
-
-                imagesContainer.appendChild(imgHolder);
+                if (allImgHolders[4].querySelector("img")) {
+                    for (var i = parseInt(previewId.split("_")[3]); i < allImgHolders.length - 1; i++) {
+                        allImgHolders[i].children[2].appendChild(allImgHolders[i + 1].querySelector("img"));
+                    }
+                    allImgHolders[allImgHolders.length - 1].remove();
+                }
+                else {
+                    if (indexToDelete === 4) {
+                        allImgHolders[allImgHolders.length - 1].remove();
+                    }
+                    else {
+                        for (var i = parseInt(previewId.split("_")[3]); i < allImgHolders.length - 2; i++) {
+                            allImgHolders[i].children[2].appendChild(allImgHolders[i + 1].querySelector("img"));
+                        }
+                        allImgHolders[allImgHolders.length - 1].remove();
+                        allImgHolders[allImgHolders.length - 2].remove();
+                    }
+                }
             }
+
+            const inputId = imagesContainer.id + "_imageInput_0";
+            const baseInputId = inputId.split("").slice(0, -1).join("");
+            const nextInputId = baseInputId + (allImgHolders.length - 2);
+
+            const nextInput = document.createElement("input");
+            nextInput.type = "file";
+            nextInput.id = nextInputId;
+            nextInput.name = "image";
+            nextInput.accept = "image/*";
+            nextInput.onchange = function() {
+                previewImage(nextInputId, nextInputId.replace("imageInput", "imagePreview"));
+            };
+
+            const newImgHolder = document.createElement("div");
+            newImgHolder.classList.add("imgHolder");
+            newImgHolder.appendChild(nextInput);
+
+            const imagePreview = document.createElement("div");
+            imagePreview.id = nextInputId.replace("imageInput", "imagePreview");
+            imagePreview.classList.add("img");
+            newImgHolder.appendChild(imagePreview);
+
+            imagesContainer.appendChild(newImgHolder);
         }
 
 
