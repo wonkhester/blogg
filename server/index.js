@@ -262,15 +262,17 @@ app.post("/blog/delete/:id", async (req, res) => {
                 const username = req.session.username;
     
                 const userFilePath = path.join(accountsPath, `${username}.json`);
-                const userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
-                
+                var userData = JSON.parse(await fs.readFile(userFilePath, "utf8"));
+
                 if (userData.ownedBlogs.includes(parseInt(id))) {
                     await fs.unlink(path.join(blogPath, `${id}.json`));
 
-                    const blogId = userData.indexOf(id);
-                    delete userData[blogId];
+                    const blogId = userData.ownedBlogs.indexOf(id);
+                    userData.ownedBlogs.splice(blogId, 1);
 
-                    await fs.writeFile(path.join(accountsPath, `${username}.json`), userData);
+                    console.log(userData.ownedBlogs)
+
+                    await fs.writeFile(userFilePath, JSON.stringify(userData));
 
                     res.redirect("/home");
                 }
